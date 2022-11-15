@@ -22,3 +22,11 @@ def generator_person():
         mobile=faker_us.msisdn(),
         current_address=faker_us.address(),
     )
+
+
+def generated_file():
+    path = rf'C:\Users\Artem\projects\test_demoqa_webform\filetest{random.randint(0, 999)}.txt'
+    file = open(path, 'w+')
+    file.write(f'Hello World{random.randint(0, 999)}')
+    file.close()
+    return file.name, path

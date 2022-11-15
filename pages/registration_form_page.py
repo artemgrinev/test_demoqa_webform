@@ -1,10 +1,11 @@
+import os
 import random
 import time
 from calendar import monthrange
 
 from selenium.webdriver.common.by import By
 
-from generator.generators import generator_person, value_subjects
+from generator.generators import generator_person, value_subjects, generated_file
 
 from locators.registration_form_locator import WebFormLocators
 from pages.base_page import BasePage
@@ -14,6 +15,7 @@ class TextForm(BasePage):
     locator = WebFormLocators()
 
     def fill_all_text_fields(self):
+        self.remove_ads()
         person_info = next(generator_person())
         first_name = person_info.firstname
         last_name = person_info.lastname
@@ -28,11 +30,7 @@ class TextForm(BasePage):
         self.element_is_visible(self.locator.SUBJECTS).send_keys(subjects)
         self.click_to_enter()
         self.element_is_visible(self.locator.ADDRESS).send_keys(current_address)
-        return first_name, last_name, email, mobile, subjects, current_address
-
-
-class Calendar(BasePage):
-    locator = WebFormLocators()
+        return f"{first_name} {last_name}", email, mobile, subjects, current_address
 
     def select_random_month(self):
         self.element_is_visible(self.locator.DATE_OF_BIRTH_INPUT).click()
@@ -60,16 +58,18 @@ class Calendar(BasePage):
         self.click_to_element(element)
         return day
 
-    def get_result(self):
+    def get_result_deta(self):
         element = self.element_is_present(self.locator.DATE_OF_BIRTH_INPUT).get_attribute('value')
         day = element.split()[0]
         month = element.split()[1]
         year = element.split()[2]
         return f"{int(day)} {month} {year}"
 
-
-class CheckBoxAndRadioBtn(BasePage):
-    locator = WebFormLocators()
+    def select_file(self):
+        file_name, path = generated_file()
+        self.element_is_present(self.locator.UPLOAD_PICTURE_BTN).send_keys(path)
+        os.remove(path)
+        return file_name
 
     def select_random_radio(self):
         element = self.element_is_present(self.locator.ALL_GENDER_RADIO)
@@ -83,10 +83,6 @@ class CheckBoxAndRadioBtn(BasePage):
         element.click()
         return hobbies
 
-
-class DropDown(BasePage):
-    locator = WebFormLocators()
-
     def select_state_and_city(self):
         state = self.element_is_visible(self.locator.SELECT_STATE_INPUT)
         self.click_to_element(state)
@@ -97,27 +93,21 @@ class DropDown(BasePage):
         self.click_to_arrow_down()
         self.click_to_enter()
 
-    def get_result(self):
+    def get_result_citi_state(self):
         elements = self.element_are_presents(self.locator.RESULT_STATE_INPUT)
         state = elements[0].text
         citi = elements[1].text
-        return state, citi
-
-
-class ResultTable(BasePage):
-    locator = WebFormLocators()
+        return f"{state} {citi}"
 
     def click_submit(self):
-        self.remove_ads()
         self.go_to_element(self.element_is_visible(self.locator.SUBMIT))
         self.element_is_present(self.locator.SUBMIT).click()
 
-    def get_result(self):
-        # table = self.element_are_visible(self.locator.RESULT_TABLE)
+    def get_result_table(self):
         result_list = self.element_are_visible(self.locator.RESULT_TABLE)
         data = []
         for item in result_list:
             self.go_to_element(item)
             data.append(item.text)
-        print(data)
+        return data
 
